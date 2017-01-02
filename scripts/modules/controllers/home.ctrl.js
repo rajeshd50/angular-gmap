@@ -27,7 +27,16 @@ module.exports = [
                 lng: 87.3468017578125
             },
             radius: 67721.15924242369
+        }, {
+            type: 'rectangle',
+            bounds: {
+                north: 23.82555130688476,
+                south: 21.94304553343818,
+                east: 92.30712890625,
+                west: 88.92333984375
+            }
         }];
+        vm.config = {zoom:6};
         vm.googleApiKey = 'AIzaSyA4JZLPpoHa-yAdTh4WiA_CGAGWCACxa2c';
     }
 ];

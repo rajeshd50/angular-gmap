@@ -8,19 +8,24 @@ module.exports = [function () {
             apiKey: '=',
             cordArr: '=',
             circleOptions: '@',
-            polygonOptions: '@'
+            polygonOptions: '@',
+            rectangleOptions: '@',
+            edit: '=',
+            config: '='
         },
         link: function (scope, elem, attrs) {
             scope.map = undefined;
+            scope.edit = (undefined == scope.edit) ? true : scope.edit == true;
+            scope.config = scope.config ? scope.config : {};
 
             var _circleOptions = {
                 fillColor: '#AA0000',
                 fillOpacity: 0.35,
                 strokeWeight: 2,
                 clickable: true,
-                editable: true,
+                editable: scope.edit,
                 zIndex: 1,
-                draggable: true,
+                draggable: scope.edit,
                 geodesic: false,
                 strokeColor: '#AA0000',
                 strokeOpacity: 0.8
@@ -30,16 +35,38 @@ module.exports = [function () {
                 fillOpacity: 0.35,
                 strokeWeight: 2,
                 clickable: true,
-                editable: true,
+                editable: scope.edit,
                 zIndex: 1,
-                draggable: true,
+                draggable: scope.edit,
                 strokeColor: '#0000FF',
                 strokeOpacity: 0.8
             };
-            scope.circleOptions = scope.circleOptions?scope.circleOptions:{};
-            scope.polygonOptions = scope.polygonOptions?scope.polygonOptions:{};
+
+            var _rectangleOptions = {
+                fillColor: '#00FF00',
+                fillOpacity: 0.35,
+                strokeWeight: 2,
+                clickable: true,
+                editable: scope.edit,
+                zIndex: 1,
+                draggable: scope.edit,
+                strokeColor: '#00FF00',
+                strokeOpacity: 0.8
+            };
+            scope.circleOptions = scope.circleOptions ? scope.circleOptions : {};
+            scope.polygonOptions = scope.polygonOptions ? scope.polygonOptions : {};
+            scope.rectangleOptions = scope.rectangleOptions ? scope.rectangleOptions : {};
             scope.circleOptions = genOptions(scope.circleOptions, _circleOptions);
             scope.polygonOptions = genOptions(scope.polygonOptions, _polygonOptions);
+            scope.rectangleOptions = genOptions(scope.rectangleOptions, _rectangleOptions);
+
+            scope.config = genOptions(scope.config, {
+                center: {
+                    lat: 22.5726,
+                    lng: 88.363
+                },
+                zoom: 8
+            });
 
             window.mapInit = function () {
                 initMap();
@@ -77,13 +104,13 @@ module.exports = [function () {
                         res[arr[i]] = target[arr[i]];
                     }
                 }
-                console.log(source, target, res);
                 return res;
             }
 
             function initMap() {
                 scope.polygons = [];
                 scope.circles = [];
+                scope.rectangles = [];
                 scope.clearSelection = function () {
                     if (scope.selectedShape) {
                         scope.selectedShape.setEditable(false);
@@ -107,15 +134,16 @@ module.exports = [function () {
                         if (scope.circles.indexOf(scope.selectedShape) >= 0) {
                             scope.circles.splice(scope.circles.indexOf(scope.selectedShape), 1);
                         }
+
+                        if (scope.rectangles.indexOf(scope.selectedShape) >= 0) {
+                            scope.rectangles.splice(scope.rectangles.indexOf(scope.selectedShape), 1);
+                        }
                         scope.selectedShape.setMap(null);
                     }
                 }
                 scope.map = new google.maps.Map(document.getElementById('map'), {
-                    center: {
-                        lat: 22.5726,
-                        lng: 88.363
-                    },
-                    zoom: 8,
+                    center: scope.config.center,
+                    zoom: scope.config.zoom,
                     mapTypeControl: true,
                     mapTypeControlOptions: {
                         style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
@@ -128,13 +156,14 @@ module.exports = [function () {
                     drawingControl: true,
                     drawingControlOptions: {
                         position: google.maps.ControlPosition.TOP_CENTER,
-                        drawingModes: ['marker', 'circle', 'polygon', 'polyline', 'rectangle']
+                        drawingModes: ['marker', 'circle', 'polygon', 'rectangle']
                     },
                     markerOptions: {
                         icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png'
                     },
                     circleOptions: scope.circleOptions,
-                    polygonOptions: scope.polygonOptions
+                    polygonOptions: scope.polygonOptions,
+                    rectangleOptions: scope.rectangleOptions
                 });
 
                 for (var i = 0; i < scope.cordArr.length; i++) {
@@ -154,11 +183,23 @@ module.exports = [function () {
                             center: scope.cordArr[i].center,
                             radius: scope.cordArr[i].radius,
                         }, scope.circleOptions));
+
                         circ.setMap(scope.map);
                         google.maps.event.addListener(circ, 'click', function () {
                             scope.setSelection(circ);
                         });
                         scope.circles.push(circ);
+                    } else if (scope.cordArr[i].type == 'rectangle') {
+                        var rect = new google.maps.Rectangle(genOptions({
+                            map: scope.map,
+                            bounds: scope.cordArr[i].bounds,
+                        }, scope.rectangleOptions));
+
+                        rect.setMap(scope.map);
+                        google.maps.event.addListener(rect, 'click', function () {
+                            scope.setSelection(rect);
+                        });
+                        scope.rectangles.push(rect);
                     }
 
                 }
@@ -179,7 +220,17 @@ module.exports = [function () {
                     scope.circles.push(circle);
                 });
 
-                drawingManager.setMap(scope.map);
+                google.maps.event.addListener(drawingManager, 'rectanglecomplete', function (rectangle) {
+                    rectangle.setMap(scope.map);
+                    google.maps.event.addListener(rectangle, 'click', function () {
+                        scope.setSelection(rectangle);
+                    });
+                    scope.rectangles.push(rectangle);
+                });
+
+                if (scope.edit == true) {
+                    drawingManager.setMap(scope.map);
+                }
             }
         },
         controller: ['$scope', function ($scope) {
@@ -197,6 +248,18 @@ module.exports = [function () {
                 for (var i = 0; i < $scope.circles.length; i++) {
                     console.log('------------------');
                     console.log($scope.circles[i].getRadius(), $scope.circles[i].getCenter().lat(), $scope.circles[i].getCenter().lng());
+                    console.log('------------------');
+                }
+
+                for (var i = 0; i < $scope.rectangles.length; i++) {
+                    console.log('------------------');
+
+                    var ne = $scope.rectangles[i].getBounds().getNorthEast();
+                    var sw = $scope.rectangles[i].getBounds().getSouthWest();
+
+                    console.log(ne.lat(),ne.lng());
+                    console.log(sw.lat(),sw.lng());
+
                     console.log('------------------');
                 }
             };
