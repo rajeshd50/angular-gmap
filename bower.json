@@ -1,0 +1,15 @@
+{
+  "name": "Gmap-Test",
+  "private": "true",
+  "devDependencies": {},
+  "dependencies": {
+    "angular":"~1.5.3",
+    "angular-bootstrap": "",
+    "angular-animate": "~1.5.3",
+    "angular-toastr": "",
+    "angular-sanitize": "",
+    "angular-messages": "~1.4.8",
+    "angular-aria": "~1.5.3",
+    "angular-ui-router": ""
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "gmap-test",
+  "version": "1.0.0",
+  "description": "GMAP Test",
+  "scripts": {
+    "start": "gulp build",
+    "watch": "gulp"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "angularjs-toaster": "",
+    "apidoc": "^0.13.1",
+    "browser-sync": "",
+    "gulp": "^3.5.6",
+    "gulp-browserify": "^0.5.1",
+    "gulp-concat": "^2.6.0",
+    "gulp-if": "^1.2.5",
+    "gulp-minify": "",
+    "gulp-minify-css": "^0.3.0",
+    "gulp-ng-annotate": "^1.1.0",
+    "gulp-ng-constant": "",
+    "gulp-notify": "",
+    "gulp-plumber": "",
+    "gulp-rename": "^1.2.0",
+    "gulp-sass": "^3.0.0",
+    "gulp-uglify": "^1.2.0",
+    "jsdoc": "^3.3.0",
+    "oauth": "^0.9.13",
+    "run-sequence": "",
+    "stringify": "^3.1.0"
+  }
+}
